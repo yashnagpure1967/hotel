@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}{{ room.name }} - Team Alpha Hotel{% endblock %}
+
+{% block content %}
+<!-- Room Header -->
+<section class="room-header">
+    <div class="container">
+        <div class="room-breadcrumb">
+            <a href="{{ url_for('home') }}">Home</a>
+            <span>/</span>
+            <a href="{{ url_for('rooms') }}">Rooms</a>
+            <span>/</span>
+            <span>{{ room.name }}</span>
+        </div>
+        <h1>{{ room.name }}</h1>
+        <div class="room-meta">
+            <span class="room-type">{{ room.room_type }}</span>
+            <span class="room-rating">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star-half-alt"></i>
+                <span>4.5 (128 reviews)</span>
+            </span>
+        </div>
+    </div>
+</section>
+
+<!-- Room Details Section -->
+<section class="room-detail-section">
+    <div class="container">
+        <div class="room-detail-grid">
+            <!-- Room Gallery -->
+            <div class="room-gallery">
+                <div class="main-image">
+                    <img src="{{ room.image_url }}" alt="{{ room.name }}" id="mainImage">
+                </div>
+                <div class="gallery-thumbnails">
+                    <img src="{{ room.image_url }}" alt="{{ room.name }}" class="thumbnail active" onclick="changeImage(this.src)">
+                    <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400" alt="{{ room.name }}" class="thumbnail" onclick="changeImage(this.src)">
+                    <img src="https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=400" alt="{{ room.name }}" class="thumbnail" onclick="changeImage(this.src)">
+                    <img src="https://images.unsplash.com/photo-1551882547-ff40c63e527b?w=400" alt="{{ room.name }}" class="thumbnail" onclick="changeImage(this.src)">
+                </div>
+            </div>
+
+            <!-- Booking Form -->
+            <div class="booking-section">
+                <div class="booking-card">
+                    <div class="price-header">
+                        <div class="price-info">
+                            <span class="price">${{ room.price }}</span>
+                            <span class="per-night">per night</span>
+                        </div>
+                        <div class="room-info">
+                            <span class="max-guests"><i class="fas fa-users"></i> {{ room.max_guests }} Guests</span>
+                            <span class="room-size"><i class="fas fa-expand"></i> 35 m²</span>
+                        </div>
+                    </div>
+
+                    <form method="POST" action="{{ url_for('create_booking') }}" id="bookingForm" data-room-price="{{ room.price }}">
+                        <input type="hidden" name="room_id" value="{{ room.id }}">
+                        
+                        <div class="form-group">
+                            <label for="checkin"><i class="fas fa-calendar-check"></i> Check-in Date</label>
+                            <input type="date" id="checkin" name="checkin" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="checkout"><i class="fas fa-calendar-times"></i> Check-out Date</label>
+                            <input type="date" id="checkout" name="checkout" required>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="name"><i class="fas fa-user"></i> Full Name</label>
+                                <input type="text" id="name" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone"><i class="fas fa-phone"></i> Phone Number</label>
+                            <input type="tel" id="phone" name="phone" required>
+                        </div>
+                        
+                        <div class="price-calculation">
+                            <div class="price-breakdown">
+                                <div class="price-row">
+                                    <span>Room Price x <span id="numNights">0</span> nights</span>
+                                    <span>$<span id="roomTotal">{{ room.price }}</span></span>
+                                </div>
+                                <div class="price-row">
+                                    <span>Taxes & Fees</span>
+                                    <span>$<span id="taxes">0</span></span>
+                                </div>
+                                <div class="price-row total">
+                                    <span>Total Price</span>
+                                    <span>$<span id="totalPrice">{{ room.price }}</span></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-full">
+                            <i class="fas fa-check-circle"></i> Book Now
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Room Information -->
+        <div class="room-info-section">
+            <div class="room-description">
+                <h2>About This Room</h2>
+                <p>{{ room.description }}</p>
+            </div>
+
+            <div class="room-amenities">
+                <h2>Room Amenities</h2>
+                <div class="amenities-grid">
+                    {% if room.amenities %}
+                        {% set amenities_list = room.amenities.split(',') %}
+                        {% for amenity in amenities_list %}
+                            <div class="amenity-item">
+                                <i class="fas fa-check-circle"></i>
+                                <span>{{ amenity }}</span>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="room-policies">
+                <h2>House Rules</h2>
+                <div class="policy-list">
+                    <div class="policy-item">
+                        <i class="fas fa-clock"></i>
+                        <div>
+                            <h4>Check-in / Check-out</h4>
+                            <p>Check-in: 2:00 PM - 10:00 PM<br>Check-out: 11:00 AM</p>
+                        </div>
+                    </div>
+                    <div class="policy-item">
+                        <i class="fas fa-ban"></i>
+                        <div>
+                            <h4>Cancellation Policy</h4>
+                            <p>Free cancellation up to 24 hours before check-in</p>
+                        </div>
+                    </div>
+                    <div class="policy-item">
+                        <i class="fas fa-smoking-ban"></i>
+                        <div>
+                            <h4>Smoking Policy</h4>
+                            <p>Non-smoking rooms only</p>
+                        </div>
+                    </div>
+                    <div class="policy-item">
+                        <i class="fas fa-paw"></i>
+                        <div>
+                            <h4>Pet Policy</h4>
+                            <p>Pets are not allowed</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+<script>
+// Room detail page specific JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    const roomPrice = parseFloat(document.getElementById('bookingForm').dataset.roomPrice);
+    const checkinInput = document.getElementById('checkin');
+    const checkoutInput = document.getElementById('checkout');
+    
+    // Set minimum dates
+    const today = new Date().toISOString().split('T')[0];
+    checkinInput.min = today;
+    checkoutInput.min = today;
+    
+    // Calculate price when dates change
+    checkinInput.addEventListener('change', calculateTotalPrice);
+    checkoutInput.addEventListener('change', calculateTotalPrice);
+    
+    function calculateTotalPrice() {
+        const checkin = new Date(checkinInput.value);
+        const checkout = new Date(checkoutInput.value);
+        
+        if (checkin && checkout && checkout > checkin) {
+            const nights = Math.ceil((checkout - checkin) / (1000 * 60 * 60 * 24));
+            const roomTotal = roomPrice * nights;
+            const taxes = roomTotal * 0.1; // 10% tax
+            const total = roomTotal + taxes;
+            
+            document.getElementById('numNights').textContent = nights;
+            document.getElementById('roomTotal').textContent = roomTotal.toFixed(2);
+            document.getElementById('taxes').textContent = taxes.toFixed(2);
+            document.getElementById('totalPrice').textContent = total.toFixed(2);
+        } else {
+            document.getElementById('numNights').textContent = '0';
+            document.getElementById('roomTotal').textContent = roomPrice.toFixed(2);
+            document.getElementById('taxes').textContent = '0.00';
+            document.getElementById('totalPrice').textContent = roomPrice.toFixed(2);
+        }
+    }
+    
+    // Update checkout minimum date when checkin changes
+    checkinInput.addEventListener('change', function() {
+        const checkinDate = new Date(this.value);
+        const nextDay = new Date(checkinDate);
+        nextDay.setDate(nextDay.getDate() + 1);
+        checkoutInput.min = nextDay.toISOString().split('T')[0];
+        
+        if (checkoutInput.value && new Date(checkoutInput.value) <= checkinDate) {
+            checkoutInput.value = nextDay.toISOString().split('T')[0];
+        }
+        calculateTotalPrice();
+    });
+});
+
+function changeImage(src) {
+    document.getElementById('mainImage').src = src;
+    
+    // Update active thumbnail
+    document.querySelectorAll('.thumbnail').forEach(thumb => {
+        thumb.classList.remove('active');
+        if (thumb.src === src) {
+            thumb.classList.add('active');
+        }
+    });
+}
+</script>

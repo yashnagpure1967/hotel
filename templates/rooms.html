@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Rooms - Team Alpha Hotel{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <h1>Our Rooms</h1>
+        <p>Choose from our selection of comfortable and luxurious rooms</p>
+    </div>
+</section>
+
+<!-- Search and Filter Section -->
+<section class="search-filter">
+    <div class="container">
+        <div class="filter-controls">
+            <div class="search-box">
+                <input type="text" id="roomSearch" placeholder="Search rooms...">
+                <button class="btn btn-primary"><i class="fas fa-search"></i></button>
+            </div>
+            <div class="filter-options">
+                <select id="roomTypeFilter">
+                    <option value="">All Types</option>
+                    <option value="Single">Single</option>
+                    <option value="Double">Double</option>
+                    <option value="Deluxe">Deluxe</option>
+                </select>
+                <select id="priceFilter">
+                    <option value="">All Prices</option>
+                    <option value="0-100">Under $100</option>
+                    <option value="100-200">$100 - $200</option>
+                    <option value="200-300">$200 - $300</option>
+                    <option value="300+">$300+</option>
+                </select>
+                <select id="guestFilter">
+                    <option value="">All Guests</option>
+                    <option value="1">1 Guest</option>
+                    <option value="2">2 Guests</option>
+                    <option value="3">3 Guests</option>
+                    <option value="4">4+ Guests</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Rooms Grid -->
+<section class="rooms-section">
+    <div class="container">
+        <div class="loading-spinner" id="loadingSpinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading rooms...</p>
+        </div>
+        
+        <div class="rooms-grid" id="roomsGrid">
+            <!-- Rooms will be dynamically loaded here -->
+        </div>
+        
+        <div class="no-results" id="noResults" style="display: none;">
+            <i class="fas fa-search"></i>
+            <h3>No rooms found</h3>
+            <p>Try adjusting your search criteria</p>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+<script>
+// Page-specific JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    loadRooms();
+    
+    // Event listeners for filters
+    document.getElementById('roomSearch').addEventListener('input', filterRooms);
+    document.getElementById('roomTypeFilter').addEventListener('change', filterRooms);
+    document.getElementById('priceFilter').addEventListener('change', filterRooms);
+    document.getElementById('guestFilter').addEventListener('change', filterRooms);
+});
+
+function loadRooms() {
+    fetch('/api/rooms')
+        .then(response => response.json())
+        .then(rooms => {
+            displayRooms(rooms);
+            document.getElementById('loadingSpinner').style.display = 'none';
+        })
+        .catch(error => {
+            console.error('Error loading rooms:', error);
+            document.getElementById('loadingSpinner').style.display = 'none';
+            document.getElementById('noResults').style.display = 'block';
+        });
+}
+
+function displayRooms(rooms) {
+    const roomsGrid = document.getElementById('roomsGrid');
+    roomsGrid.innerHTML = '';
+    
+    rooms.forEach(room => {
+        const roomCard = createRoomCard(room);
+        roomsGrid.appendChild(roomCard);
+    });
+}
+
+function createRoomCard(room) {
+    const card = document.createElement('div');
+    card.className = 'room-card';
+    card.dataset.roomType = room.room_type;
+    card.dataset.price = room.price;
+    card.dataset.maxGuests = room.max_guests;
+    
+    const amenities = room.amenities.slice(0, 3).join(', ');
+    
+    card.innerHTML = `
+        <div class="room-image">
+            <img src="${room.image_url}" alt="${room.name}">
+            <div class="room-price">
+                <span class="price">$${room.price}</span>
+                <span class="per-night">per night</span>
+            </div>
+        </div>
+        <div class="room-content">
+            <h3>${room.name}</h3>
+            <div class="room-type">${room.room_type}</div>
+            <p class="room-description">${room.description.substring(0, 100)}...</p>
+            <div class="room-amenities">
+                ${room.amenities.slice(0, 3).map(amenity => `<span class="amenity">${amenity}</span>`).join('')}
+            </div>
+            <div class="room-footer">
+                <div class="room-info">
+                    <span class="max-guests"><i class="fas fa-users"></i> ${room.max_guests} Guests</span>
+                    <span class="room-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                        <span>4.5</span>
+                    </span>
+                </div>
+                <a href="/room/${room.id}" class="btn btn-secondary">View Details</a>
+            </div>
+        </div>
+    `;
+    
+    return card;
+}
+
+function filterRooms() {
+    const searchTerm = document.getElementById('roomSearch').value.toLowerCase();
+    const roomType = document.getElementById('roomTypeFilter').value;
+    const priceRange = document.getElementById('priceFilter').value;
+    const guestFilter = document.getElementById('guestFilter').value;
+    
+    const roomCards = document.querySelectorAll('.room-card');
+    let visibleCount = 0;
+    
+    roomCards.forEach(card => {
+        const roomName = card.querySelector('h3').textContent.toLowerCase();
+        const roomTypeCard = card.dataset.roomType;
+        const price = parseFloat(card.dataset.price);
+        const maxGuests = parseInt(card.dataset.maxGuests);
+        
+        let show = true;
+        
+        // Search filter
+        if (searchTerm && !roomName.includes(searchTerm)) {
+            show = false;
+        }
+        
+        // Room type filter
+        if (roomType && roomTypeCard !== roomType) {
+            show = false;
+        }
+        
+        // Price filter
+        if (priceRange) {
+            const [min, max] = priceRange.split('-').map(p => p === '+' ? Infinity : parseFloat(p));
+            if (price < min || price > max) {
+                show = false;
+            }
+        }
+        
+        // Guest filter
+        if (guestFilter) {
+            if (guestFilter === '4+' && maxGuests < 4) {
+                show = false;
+            } else if (guestFilter !== '4+' && maxGuests < parseInt(guestFilter)) {
+                show = false;
+            }
+        }
+        
+        card.style.display = show ? 'block' : 'none';
+        if (show) visibleCount++;
+    });
+    
+    // Show/hide no results message
+    document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
+}
+</script>

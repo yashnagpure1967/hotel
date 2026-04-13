@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Team Alpha Hotel{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2><i class="fas fa-hotel"></i> Team Alpha Hotel</h2>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="{{ url_for('home') }}" class="nav-link">Home</a></li>
+                <li><a href="{{ url_for('rooms') }}" class="nav-link">Rooms</a></li>
+                <li><a href="#" class="nav-link">About</a></li>
+                <li><a href="#" class="nav-link">Contact</a></li>
+            </ul>
+            <div class="nav-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                        <span class="flash-close">&times;</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3><i class="fas fa-hotel"></i> Team Alpha Hotel</h3>
+                <p>Experience luxury and comfort at our premium hotel. Your perfect stay awaits.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="{{ url_for('home') }}">Home</a></li>
+                    <li><a href="{{ url_for('rooms') }}">Rooms</a></li>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Contact Info</h4>
+                <p><i class="fas fa-phone"></i> +1 234 567 8900</p>
+                <p><i class="fas fa-envelope"></i> info@teamalphahotel.com</p>
+                <p><i class="fas fa-map-marker-alt"></i> 123 Hotel Street, City, Country</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Team Alpha Hotel. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
